@@ -1,0 +1,33 @@
+[mysqld]
+server-id                       = 1
+log_bin                         = /var/lib/mysql/mysql-bin
+binlog_format                   = ROW
+default_authentication_plugin   = mysql_native_password
+
+innodb_buffer_pool_size         = 512M
+innodb_log_file_size            = 128M
+innodb_flush_log_at_trx_commit  = 2
+innodb_file_per_table           = ON
+innodb_autoinc_lock_mode        = 2
+
+wsrep_on                        = ON
+wsrep_provider                  = /usr/lib64/galera4/libgalera_smm.so
+wsrep_cluster_name              = pxc-cluster
+wsrep_cluster_address           = gcomm://
+wsrep_node_name                 = pxc1
+wsrep_node_address              = 172.20.0.11
+
+# Disable SSL for Docker internal network
+pxc_encrypt_cluster_traffic     = OFF
+wsrep_provider_options          = "socket.ssl=NO"
+
+wsrep_sst_method                = xtrabackup-v2
+wsrep_slave_threads             = 4
+wsrep_retry_autocommit          = 3
+wsrep_log_conflicts             = ON
+
+performance_schema              = ON
+performance_schema_instrument   = '%=ON'
+
+[client]
+default-character-set           = utf8mb4

@@ -1,0 +1,300 @@
+version: "3.8"
+
+networks:
+  pxc-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/24
+
+volumes:
+  pxc1-data:
+  pxc2-data:
+  pxc3-data:
+  pmm-data:
+
+secrets:
+  mysql_root_password:
+    file: ./secrets/mysql_root_password.txt
+  xtrabackup_password:
+    file: ./secrets/xtrabackup_password.txt
+
+services:
+
+  # ─────────────────────────────────────────────
+  #  PXC NODE 1  (Bootstrap node)
+  # ─────────────────────────────────────────────
+  pxc1:
+    image: percona/percona-xtradb-cluster:8.0
+    container_name: pxc1
+    hostname: pxc1
+    restart: unless-stopped
+    networks:
+      pxc-network:
+        ipv4_address: 172.20.0.11
+    ports:
+      - "3311:3306"
+    volumes:
+      - pxc1-data:/var/lib/mysql
+      - ./pxc-config/pxc1.cnf:/etc/percona-xtradb-cluster.conf.d/custom.cnf:ro
+    environment:
+      MYSQL_ROOT_PASSWORD_FILE: /run/secrets/mysql_root_password
+      XTRABACKUP_PASSWORD_FILE: /run/secrets/xtrabackup_password
+      CLUSTER_NAME: pxc-cluster
+      WSREP_SST_METHOD: xtrabackup-v2
+      CLUSTER_JOIN: ""
+    secrets:
+      - mysql_root_password
+      - xtrabackup_password
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "--silent"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 60s
+
+  # ─────────────────────────────────────────────
+  #  PXC NODE 2
+  # ─────────────────────────────────────────────
+  pxc2:
+    image: percona/percona-xtradb-cluster:8.0
+    container_name: pxc2
+    hostname: pxc2
+    restart: unless-stopped
+    networks:
+      pxc-network:
+        ipv4_address: 172.20.0.12
+    ports:
+      - "3312:3306"
+    volumes:
+      - pxc2-data:/var/lib/mysql
+      - ./pxc-config/pxc2.cnf:/etc/percona-xtradb-cluster.conf.d/custom.cnf:ro
+    environment:
+      MYSQL_ROOT_PASSWORD_FILE: /run/secrets/mysql_root_password
+      XTRABACKUP_PASSWORD_FILE: /run/secrets/xtrabackup_password
+      CLUSTER_NAME: pxc-cluster
+      WSREP_SST_METHOD: xtrabackup-v2
+      CLUSTER_JOIN: pxc1
+    secrets:
+      - mysql_root_password
+      - xtrabackup_password
+    depends_on:
+      pxc1:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "--silent"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 90s
+
+  # ─────────────────────────────────────────────
+  #  PXC NODE 3
+  # ─────────────────────────────────────────────
+  pxc3:
+    image: percona/percona-xtradb-cluster:8.0
+    container_name: pxc3
+    hostname: pxc3
+    restart: unless-stopped
+    networks:
+      pxc-network:
+        ipv4_address: 172.20.0.13
+    ports:
+      - "3313:3306"
+    volumes:
+      - pxc3-data:/var/lib/mysql
+      - ./pxc-config/pxc3.cnf:/etc/percona-xtradb-cluster.conf.d/custom.cnf:ro
+    environment:
+      MYSQL_ROOT_PASSWORD_FILE: /run/secrets/mysql_root_password
+      XTRABACKUP_PASSWORD_FILE: /run/secrets/xtrabackup_password
+      CLUSTER_NAME: pxc-cluster
+      WSREP_SST_METHOD: xtrabackup-v2
+      CLUSTER_JOIN: pxc1
+    secrets:
+      - mysql_root_password
+      - xtrabackup_password
+    depends_on:
+      pxc2:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "--silent"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 90s
+
+  # ─────────────────────────────────────────────
+  #  HAPROXY 1  (Primary)
+  # ─────────────────────────────────────────────
+  haproxy1:
+    image: haproxy:2.9-alpine
+    container_name: haproxy1
+    hostname: haproxy1
+    restart: unless-stopped
+    networks:
+      pxc-network:
+        ipv4_address: 172.20.0.21
+    ports:
+      - "3306:3306"
+      - "3307:3307"
+      - "8404:8404"
+    volumes:
+      - ./haproxy/haproxy1.cfg:/usr/local/etc/haproxy/haproxy.cfg:ro
+    depends_on:
+      pxc1:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "haproxy", "-c", "-f", "/usr/local/etc/haproxy/haproxy.cfg"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ─────────────────────────────────────────────
+  #  HAPROXY 2  (Secondary)
+  # ─────────────────────────────────────────────
+  haproxy2:
+    image: haproxy:2.9-alpine
+    container_name: haproxy2
+    hostname: haproxy2
+    restart: unless-stopped
+    networks:
+      pxc-network:
+        ipv4_address: 172.20.0.22
+    ports:
+      - "3316:3306"
+      - "3317:3307"
+      - "8405:8404"
+    volumes:
+      - ./haproxy/haproxy2.cfg:/usr/local/etc/haproxy/haproxy.cfg:ro
+    depends_on:
+      pxc1:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "haproxy", "-c", "-f", "/usr/local/etc/haproxy/haproxy.cfg"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ─────────────────────────────────────────────
+  #  PMM SERVER
+  # ─────────────────────────────────────────────
+  pmm-server:
+    image: percona/pmm-server:2
+    container_name: pmm-server
+    hostname: pmm-server
+    restart: unless-stopped
+    networks:
+      pxc-network:
+        ipv4_address: 172.20.0.30
+    ports:
+      - "443:443"
+      - "80:80"
+    volumes:
+      - pmm-data:/srv
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/ping"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 60s
+
+  # ─────────────────────────────────────────────
+  #  PMM CLIENT — pxc1
+  #  network_mode: service sharing → same network
+  #  as pxc1 so localhost = pxc1's MySQL
+  # ─────────────────────────────────────────────
+  pmm-client-pxc1:
+    image: percona/pmm-client:2
+    container_name: pmm-client-pxc1
+    restart: on-failure
+    network_mode: "service:pxc1"
+    environment:
+      PMM_AGENT_SERVER_ADDRESS: pmm-server:443
+      PMM_AGENT_SERVER_INSECURE_TLS: "1"
+      PMM_AGENT_SERVER_USERNAME: admin
+      PMM_AGENT_SERVER_PASSWORD: admin
+      PMM_AGENT_SETUP: "1"
+      PMM_AGENT_SETUP_FORCE: "1"
+      PMM_AGENT_SETUP_NODE_NAME: pxc1
+      PMM_AGENT_SETUP_NODE_TYPE: container
+      PMM_AGENT_PRERUN_SCRIPT: >
+        pmm-admin add mysql
+        --username=root
+        --password-file=/run/secrets/mysql_root_password
+        --host=127.0.0.1
+        --port=3306
+        --service-name=pxc1-mysql
+        --query-source=perfschema || true
+    secrets:
+      - mysql_root_password
+    depends_on:
+      pmm-server:
+        condition: service_healthy
+      pxc1:
+        condition: service_healthy
+
+  # ─────────────────────────────────────────────
+  #  PMM CLIENT — pxc2
+  # ─────────────────────────────────────────────
+  pmm-client-pxc2:
+    image: percona/pmm-client:2
+    container_name: pmm-client-pxc2
+    restart: on-failure
+    network_mode: "service:pxc2"
+    environment:
+      PMM_AGENT_SERVER_ADDRESS: pmm-server:443
+      PMM_AGENT_SERVER_INSECURE_TLS: "1"
+      PMM_AGENT_SERVER_USERNAME: admin
+      PMM_AGENT_SERVER_PASSWORD: admin
+      PMM_AGENT_SETUP: "1"
+      PMM_AGENT_SETUP_FORCE: "1"
+      PMM_AGENT_SETUP_NODE_NAME: pxc2
+      PMM_AGENT_SETUP_NODE_TYPE: container
+      PMM_AGENT_PRERUN_SCRIPT: >
+        pmm-admin add mysql
+        --username=root
+        --password-file=/run/secrets/mysql_root_password
+        --host=127.0.0.1
+        --port=3306
+        --service-name=pxc2-mysql
+        --query-source=perfschema || true
+    secrets:
+      - mysql_root_password
+    depends_on:
+      pmm-server:
+        condition: service_healthy
+      pxc2:
+        condition: service_healthy
+
+  # ─────────────────────────────────────────────
+  #  PMM CLIENT — pxc3
+  # ─────────────────────────────────────────────
+  pmm-client-pxc3:
+    image: percona/pmm-client:2
+    container_name: pmm-client-pxc3
+    restart: on-failure
+    network_mode: "service:pxc3"
+    environment:
+      PMM_AGENT_SERVER_ADDRESS: pmm-server:443
+      PMM_AGENT_SERVER_INSECURE_TLS: "1"
+      PMM_AGENT_SERVER_USERNAME: admin
+      PMM_AGENT_SERVER_PASSWORD: admin
+      PMM_AGENT_SETUP: "1"
+      PMM_AGENT_SETUP_FORCE: "1"
+      PMM_AGENT_SETUP_NODE_NAME: pxc3
+      PMM_AGENT_SETUP_NODE_TYPE: container
+      PMM_AGENT_PRERUN_SCRIPT: >
+        pmm-admin add mysql
+        --username=root
+        --password-file=/run/secrets/mysql_root_password
+        --host=127.0.0.1
+        --port=3306
+        --service-name=pxc3-mysql
+        --query-source=perfschema || true
+    secrets:
+      - mysql_root_password
+    depends_on:
+      pmm-server:
+        condition: service_healthy
+      pxc3:
+        condition: service_healthy
