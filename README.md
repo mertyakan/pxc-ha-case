@@ -32,10 +32,6 @@ pxc-ha-case/
 ├── docker-compose.yml            # Tüm servisler ve bağımlılık zinciri
 ├── setup.sh                      # Otomatik kurulum scripti
 ├── cluster-status.sh             # Canlı cluster durum dashboard'u
-├── recovery.sh                   # Split-brain recovery scripti
-├── repl-write.sh                 # Replication lag test — yazma
-├── repl-read.sh                  # Replication lag test — okuma
-├── repl-metrics.sh               # Galera wsrep metrik monitörü
 ├── haproxy/
 │   ├── haproxy1.cfg              # HAProxy 1 konfigürasyonu
 │   └── haproxy2.cfg              # HAProxy 2 konfigürasyonu
