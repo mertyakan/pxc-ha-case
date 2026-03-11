@@ -60,8 +60,8 @@ docker exec pxc1 mysql -uroot -p"${MYSQL_PASS}" -e "
   FLUSH PRIVILEGES;
 " && info "PMM user created." || warn "Could not create PMM user"
 
-# ── 8. PMM: register nodes via REST API ───────────────────────
-info "Waiting for all 3 PXC nodes to be healthy before PMM registration..."
+# ── 8. Cluster sağlık kontrolü ───────────────────────────────
+info "Waiting for all 3 PXC nodes to be healthy..."
 
 wait_for_cluster() {
     local max_attempts=30
@@ -83,8 +83,7 @@ wait_for_cluster() {
 wait_for_cluster
 sleep 5
 
-# ── pxc1 config güncelle: bootstrap → full HA ─────────────
-# pxc1 gcomm:// ile başladı, artık tüm node'ları bilmeli
+# ── pxc1 config güncelle: bootstrap → full HA ────────────────
 info "Updating pxc1 wsrep_cluster_address for full HA..."
 docker exec pxc1 bash -c \
   "sed -i 's|wsrep_cluster_address.*=.*gcomm://\$|wsrep_cluster_address           = gcomm://pxc1,pxc2,pxc3|' \
@@ -92,52 +91,36 @@ docker exec pxc1 bash -c \
   && info "pxc1 HA config updated ✓ (takes effect on next restart)" \
   || warn "Could not update pxc1 config"
 
-info "Registering PXC nodes with PMM Server via API..."
+# ── 9. PMM: servis kaydı ─────────────────────────────────────
+info "Registering PXC nodes with PMM Server..."
 
 for NODE in pxc1 pxc2 pxc3; do
     info "Registering ${NODE}..."
-
     RESP=$(curl -s -k -u admin:admin \
-      -X POST "https://localhost/v1/management/Node/Register" \
-      -H "Content-Type: application/json" \
-      -d "{\"node_type\":\"CONTAINER_NODE\",\"node_name\":\"${NODE}\",\"address\":\"${NODE}\",\"force_register\":true}")
-
-    NODE_ID=$(echo "$RESP" | python3 -c "
-import sys,json
-d=json.load(sys.stdin)
-print(d.get('container_node',{}).get('node_id',''))
-" 2>/dev/null)
-
-    AGENT_ID=$(echo "$RESP" | python3 -c "
-import sys,json
-d=json.load(sys.stdin)
-print(d.get('pmm_agent',{}).get('agent_id',''))
-" 2>/dev/null)
-
-    if [[ -z "$NODE_ID" || -z "$AGENT_ID" ]]; then
-        warn "${NODE}: registration failed. Response: $RESP"
-        continue
-    fi
-
-    curl -s -k -u admin:admin \
       -X POST "https://localhost/v1/management/MySQL/Add" \
       -H "Content-Type: application/json" \
       -d "{
-        \"node_id\": \"${NODE_ID}\",
-        \"pmm_agent_id\": \"${AGENT_ID}\",
+        \"add_node\": {
+          \"node_type\": \"REMOTE_NODE\",
+          \"node_name\": \"${NODE}\"
+        },
+        \"pmm_agent_id\": \"pmm-server\",
         \"service_name\": \"${NODE}-mysql\",
         \"address\": \"${NODE}\",
         \"port\": 3306,
-        \"username\": \"root\",
-        \"password\": \"${MYSQL_PASS}\",
-        \"query_source\": \"perfschema\",
-        \"skip_connection_check\": false
-      }" > /dev/null
+        \"username\": \"pmm\",
+        \"password\": \"pmmpass\",
+        \"query_source\": \"perfschema\"
+      }")
 
-    info "${NODE} registered with PMM ✓"
+    if echo "$RESP" | grep -q "service_id"; then
+        info "${NODE} registered with PMM ✓"
+    else
+        warn "${NODE} registration failed. Response: $RESP"
+    fi
 done
 
-# ── 9. Summary ────────────────────────────────────────────────
+# ── 10. Summary ───────────────────────────────────────────────
 echo ""
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo "  ✅  PXC HA Cluster is UP"
@@ -162,4 +145,3 @@ echo "                   (admin / admin)"
 echo ""
 echo "  MySQL root password → ${MYSQL_PASS}"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-
