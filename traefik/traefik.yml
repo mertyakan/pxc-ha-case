@@ -1,0 +1,19 @@
+api:
+  dashboard: true
+  insecure: true   # Dashboard :8080 — production'da false yapılmalı
+
+ping: {}           # /ping endpoint — healthcheck için
+
+entryPoints:
+  mysql-write:
+    address: ":3306"
+  mysql-read:
+    address: ":3307"
+
+providers:
+  file:
+    filename: /etc/traefik/dynamic.yml
+    watch: true
+
+log:
+  level: INFO

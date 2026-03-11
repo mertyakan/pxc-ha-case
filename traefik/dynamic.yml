@@ -1,0 +1,29 @@
+tcp:
+  routers:
+    mysql-write:
+      entryPoints:
+        - mysql-write
+      rule: "HostSNI(`*`)"
+      service: haproxy-write
+
+    mysql-read:
+      entryPoints:
+        - mysql-read
+      rule: "HostSNI(`*`)"
+      service: haproxy-read
+
+  services:
+    # Write trafiği — HAProxy 1 ve 2'ye round-robin
+    # Biri düşerse otomatik diğerine geçer (Active/Active)
+    haproxy-write:
+      loadBalancer:
+        servers:
+          - address: "haproxy1:3306"
+          - address: "haproxy2:3306"
+
+    # Read trafiği — HAProxy 1 ve 2'ye round-robin
+    haproxy-read:
+      loadBalancer:
+        servers:
+          - address: "haproxy1:3307"
+          - address: "haproxy2:3307"

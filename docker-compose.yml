@@ -124,7 +124,41 @@ services:
       start_period: 90s
 
   # ─────────────────────────────────────────────
-  #  HAPROXY 1  (Primary)
+  #  TRAEFIK  (Active/Active VIP önü)
+  #  HAProxy 1 ve 2 önünde tek giriş noktası.
+  #  Her iki HAProxy sağlıklıysa round-robin,
+  #  biri düşerse diğerine otomatik failover.
+  # ─────────────────────────────────────────────
+  traefik:
+    image: traefik:v3.0
+    container_name: traefik
+    hostname: traefik
+    restart: unless-stopped
+    networks:
+      pxc-network:
+        ipv4_address: 172.20.0.20
+    ports:
+      - "3306:3306"   # MySQL Write — tek giriş noktası
+      - "3307:3307"   # MySQL Read  — tek giriş noktası
+      - "8080:8080"   # Traefik Dashboard
+    volumes:
+      - ./traefik/traefik.yml:/etc/traefik/traefik.yml:ro
+      - ./traefik/dynamic.yml:/etc/traefik/dynamic.yml:ro
+    depends_on:
+      haproxy1:
+        condition: service_healthy
+      haproxy2:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:8080/ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ─────────────────────────────────────────────
+  #  HAPROXY 1  (Active)
+  #  Portlar dışarıya açılmıyor — Traefik üzerinden erişilir.
+  #  Stats sayfası direkt erişim için açık.
   # ─────────────────────────────────────────────
   haproxy1:
     image: haproxy:2.9-alpine
@@ -135,9 +169,7 @@ services:
       pxc-network:
         ipv4_address: 172.20.0.21
     ports:
-      - "3306:3306"
-      - "3307:3307"
-      - "8404:8404"
+      - "8404:8404"   # Stats UI
     volumes:
       - ./haproxy/haproxy1.cfg:/usr/local/etc/haproxy/haproxy.cfg:ro
     depends_on:
@@ -150,7 +182,9 @@ services:
       retries: 5
 
   # ─────────────────────────────────────────────
-  #  HAPROXY 2  (Secondary)
+  #  HAPROXY 2  (Active)
+  #  Portlar dışarıya açılmıyor — Traefik üzerinden erişilir.
+  #  Stats sayfası direkt erişim için açık.
   # ─────────────────────────────────────────────
   haproxy2:
     image: haproxy:2.9-alpine
@@ -161,9 +195,7 @@ services:
       pxc-network:
         ipv4_address: 172.20.0.22
     ports:
-      - "3316:3306"
-      - "3317:3307"
-      - "8405:8404"
+      - "8405:8404"   # Stats UI
     volumes:
       - ./haproxy/haproxy2.cfg:/usr/local/etc/haproxy/haproxy.cfg:ro
     depends_on:

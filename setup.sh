@@ -45,6 +45,10 @@ sleep 60
 info "Starting HAProxy instances..."
 docker compose up -d haproxy1 haproxy2
 
+# ── 5b. Traefik ───────────────────────────────────────────────
+info "Starting Traefik (Active/Active VIP)..."
+docker compose up -d traefik
+
 # ── 6. HAProxy health-check user ─────────────────────────────
 info "Creating haproxy_check user..."
 docker exec pxc1 mysql -uroot -p"${MYSQL_PASS}" -e \
@@ -126,19 +130,18 @@ echo "━━━━━━━━━━━━━━━━━━━━━━━━�
 echo "  ✅  PXC HA Cluster is UP"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo ""
-echo "  MySQL WRITE  → localhost:3306   (via HAProxy1)"
-echo "  MySQL WRITE  → localhost:3316   (via HAProxy2)"
-echo "  MySQL READ   → localhost:3307   (via HAProxy1)"
-echo "  MySQL READ   → localhost:3317   (via HAProxy2)"
+echo "  MySQL WRITE  → localhost:3306   (via Traefik → HAProxy1/2)"
+echo "  MySQL READ   → localhost:3307   (via Traefik → HAProxy1/2)"
 echo ""
 echo "  Direct node access:"
 echo "    pxc1 → localhost:3311"
 echo "    pxc2 → localhost:3312"
 echo "    pxc3 → localhost:3313"
 echo ""
-echo "  HAProxy1 Stats → http://localhost:8404/stats"
-echo "  HAProxy2 Stats → http://localhost:8405/stats"
-echo "                   (admin / admin)"
+echo "  Traefik Dashboard → http://localhost:8080"
+echo "  HAProxy1 Stats    → http://localhost:8404/stats"
+echo "  HAProxy2 Stats    → http://localhost:8405/stats"
+echo "                      (admin / admin)"
 echo ""
 echo "  PMM Dashboard  → https://localhost"
 echo "                   (admin / admin)"
