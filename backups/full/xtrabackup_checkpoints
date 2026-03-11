@@ -1,7 +1,0 @@
-backup_type = full-backuped
-from_lsn = 0
-to_lsn = 30055215
-last_lsn = 30332770
-flushed_lsn = 30277840
-redo_memory = 0
-redo_frames = 0

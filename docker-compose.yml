@@ -37,6 +37,7 @@ services:
     volumes:
       - pxc1-data:/var/lib/mysql
       - ./pxc-config/pxc1.cnf:/etc/percona-xtradb-cluster.conf.d/custom.cnf:ro
+      - ./backups:/backups
     environment:
       MYSQL_ROOT_PASSWORD_FILE: /run/secrets/mysql_root_password
       XTRABACKUP_PASSWORD_FILE: /run/secrets/xtrabackup_password
@@ -69,6 +70,7 @@ services:
     volumes:
       - pxc2-data:/var/lib/mysql
       - ./pxc-config/pxc2.cnf:/etc/percona-xtradb-cluster.conf.d/custom.cnf:ro
+      - ./backups:/backups
     environment:
       MYSQL_ROOT_PASSWORD_FILE: /run/secrets/mysql_root_password
       XTRABACKUP_PASSWORD_FILE: /run/secrets/xtrabackup_password
@@ -104,6 +106,7 @@ services:
     volumes:
       - pxc3-data:/var/lib/mysql
       - ./pxc-config/pxc3.cnf:/etc/percona-xtradb-cluster.conf.d/custom.cnf:ro
+      - ./backups:/backups
     environment:
       MYSQL_ROOT_PASSWORD_FILE: /run/secrets/mysql_root_password
       XTRABACKUP_PASSWORD_FILE: /run/secrets/xtrabackup_password
@@ -175,6 +178,10 @@ services:
     depends_on:
       pxc1:
         condition: service_healthy
+      pxc2:
+        condition: service_healthy
+      pxc3:
+        condition: service_healthy
     healthcheck:
       test: ["CMD", "haproxy", "-c", "-f", "/usr/local/etc/haproxy/haproxy.cfg"]
       interval: 10s
@@ -200,6 +207,10 @@ services:
       - ./haproxy/haproxy2.cfg:/usr/local/etc/haproxy/haproxy.cfg:ro
     depends_on:
       pxc1:
+        condition: service_healthy
+      pxc2:
+        condition: service_healthy
+      pxc3:
         condition: service_healthy
     healthcheck:
       test: ["CMD", "haproxy", "-c", "-f", "/usr/local/etc/haproxy/haproxy.cfg"]
