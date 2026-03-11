@@ -15,10 +15,11 @@
   }
   .header h1 { font-size:1.2rem; font-weight:700; color:#0f172a; letter-spacing:-0.02em; }
   .header p  { font-size:0.76rem; color:#64748b; margin-top:3px; font-family:'JetBrains Mono',monospace; }
-  .badges { display:flex; gap:6px; }
+  .badges { display:flex; gap:6px; flex-wrap:wrap; justify-content:flex-end; }
   .badge { padding:3px 10px; border-radius:20px; font-size:0.68rem; font-weight:600; }
   .b1{background:#dbeafe;color:#1d4ed8} .b2{background:#ede9fe;color:#7c3aed}
   .b3{background:#d1fae5;color:#065f46} .b4{background:#fef3c7;color:#92400e}
+  .b5{background:#fce7f3;color:#9d174d}
 
   .wrap {
     background:#fff; border:1px solid #e2e8f0; border-radius:14px;
@@ -38,7 +39,8 @@
   .ms{font-family:'JetBrains Mono',monospace;font-size:.71rem;color:#6b7280}
   .t{display:inline-block;padding:1px 7px;border-radius:3px;font-size:.62rem;font-weight:700;text-transform:uppercase}
   .tw{background:#ede9fe;color:#7c3aed} .tr{background:#dbeafe;color:#1d4ed8}
-  .tg{background:#d1fae5;color:#065f46} .ty{background:#fef3c7;color:#92400e} .ts{background:#f1f5f9;color:#475569}
+  .tg{background:#d1fae5;color:#065f46} .ty{background:#fef3c7;color:#92400e}
+  .ts{background:#f1f5f9;color:#475569} .tk{background:#fce7f3;color:#9d174d}
 
   .legend { display:flex; gap:20px; flex-wrap:wrap; padding:10px 16px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; margin-bottom:16px; }
   .li { display:flex; align-items:center; gap:7px; font-size:.72rem; color:#475569; }
@@ -52,9 +54,10 @@
 <div class="header">
   <div>
     <h1>Percona XtraDB Cluster — High Availability Mimarisi</h1>
-    <p>Docker Compose · Galera Multi-Master · Dual HAProxy · PMM Monitoring</p>
+    <p>Docker Compose · Galera Multi-Master · Traefik VIP · Dual HAProxy · PMM Monitoring</p>
   </div>
   <div class="badges">
+    <span class="badge b5">Traefik VIP</span>
     <span class="badge b1">3-Node Galera</span>
     <span class="badge b2">Dual HAProxy</span>
     <span class="badge b3">PMM</span>
@@ -64,24 +67,14 @@
 
 <div class="wrap">
 <!--
-  ViewBox: 1300 x 700
-  ┌─────────────────────────────────────────┐  y=10  h=72   → CLIENT
-  │                                         │
-  └─────────────────────────────────────────┘  bottom=82
-                     ↓ gap 28
-  ┌─────────────────────────────────────────┐  y=110 h=146  → HA LAYER
-  │  HAProxy 1                  HAProxy 2   │
-  └─────────────────────────────────────────┘  bottom=256
-                     ↓ gap 28
-  ┌─────────────────────────────────────────┐  y=284 h=200  → CLUSTER
-  │  pxc1          pxc2          pxc3       │
-  └─────────────────────────────────────────┘  bottom=484
-                     ↓ gap 24
-  ┌─────────────────────────────────────────┐  y=508 h=92   → PMM
-  └─────────────────────────────────────────┘  bottom=600
-  Total height: 610
+  ViewBox: 1300 x 720
+  CLIENT      y=10  h=70
+  TRAEFIK     y=104 h=90
+  HA LAYER    y=218 h=130
+  CLUSTER     y=372 h=200
+  PMM         y=592 h=88
 -->
-<svg viewBox="0 0 1300 614" xmlns="http://www.w3.org/2000/svg">
+<svg viewBox="0 0 1300 700" xmlns="http://www.w3.org/2000/svg">
 <defs>
   <filter id="s1"><feDropShadow dx="0" dy="2" stdDeviation="4" flood-color="#0f172a" flood-opacity=".08"/></filter>
   <filter id="s2"><feDropShadow dx="0" dy="1" stdDeviation="2" flood-color="#0f172a" flood-opacity=".06"/></filter>
@@ -98,212 +91,197 @@
   <marker id="mg" markerWidth="9" markerHeight="7" refX="8" refY="3.5" orient="auto">
     <polygon points="0 0,9 3.5,0 7" fill="#16a34a"/>
   </marker>
+  <marker id="mk" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto">
+    <polygon points="0 0,10 4,0 8" fill="#be185d"/>
+  </marker>
 
   <linearGradient id="sg" x1="0%" y1="0%" x2="100%" y2="0%">
     <stop offset="0%" stop-color="#2563eb"/>
     <stop offset="50%" stop-color="#6366f1"/>
     <stop offset="100%" stop-color="#2563eb"/>
   </linearGradient>
+  <linearGradient id="tg" x1="0%" y1="0%" x2="100%" y2="0%">
+    <stop offset="0%" stop-color="#be185d"/>
+    <stop offset="100%" stop-color="#9d174d"/>
+  </linearGradient>
 </defs>
 
-<!-- ── ZONE: CLIENT y=10 h=72 ── -->
-<rect x="10" y="10" width="1280" height="72" rx="10" fill="#f0f9ff" stroke="#bae6fd" stroke-width="1.2"/>
+<!-- ── ZONE: CLIENT y=10 h=70 ── -->
+<rect x="10" y="10" width="1280" height="70" rx="10" fill="#f0f9ff" stroke="#bae6fd" stroke-width="1.2"/>
 <text x="26" y="26" font-family="Inter" font-size="8.5" font-weight="700" fill="#0369a1" letter-spacing=".1em">CLIENT / APPLICATION LAYER</text>
+<rect x="500" y="20" width="300" height="48" rx="8" fill="#fff" stroke="#7dd3fc" stroke-width="1.5" filter="url(#s2)"/>
+<rect x="516" y="30" width="26" height="26" rx="6" fill="#0ea5e9"/>
+<text x="529" y="48" text-anchor="middle" font-family="Inter" font-size="12" font-weight="800" fill="#fff">A</text>
+<text x="556" y="42" font-family="Inter" font-size="11" font-weight="600" fill="#0f172a">Uygulama / İstemci</text>
+<text x="556" y="56" font-family="JetBrains Mono" font-size="8.5" fill="#64748b">write :3306  ·  read :3307</text>
 
-<!-- Client box — centered x=500 w=300, y=22 h=48 -->
-<rect x="500" y="22" width="300" height="48" rx="8" fill="#fff" stroke="#7dd3fc" stroke-width="1.5" filter="url(#s2)"/>
-<rect x="516" y="32" width="26" height="26" rx="6" fill="#0ea5e9"/>
-<text x="529" y="50" text-anchor="middle" font-family="Inter" font-size="12" font-weight="800" fill="#fff">A</text>
-<text x="556" y="44" font-family="Inter" font-size="11" font-weight="600" fill="#0f172a">Uygulama / İstemci</text>
-<text x="556" y="58" font-family="JetBrains Mono" font-size="8.5" fill="#64748b">write :3306  ·  read :3307</text>
+<!-- client → traefik arrows -->
+<line x1="580" y1="80" x2="560" y2="108" stroke="#be185d" stroke-width="2.5" marker-end="url(#mk)"/>
+<line x1="720" y1="80" x2="740" y2="108" stroke="#be185d" stroke-width="2.5" marker-end="url(#mk)"/>
 
-<!-- ── ZONE: HA LAYER y=110 h=146 ── -->
-<rect x="10" y="110" width="1280" height="146" rx="10" fill="#faf5ff" stroke="#ddd6fe" stroke-width="1.2"/>
-<text x="26" y="126" font-family="Inter" font-size="8.5" font-weight="700" fill="#7c3aed" letter-spacing=".1em">LOAD BALANCER LAYER</text>
+<!-- ── ZONE: TRAEFIK y=104 h=90 ── -->
+<rect x="10" y="104" width="1280" height="90" rx="10" fill="#fff1f2" stroke="#fecdd3" stroke-width="1.2"/>
+<text x="26" y="120" font-family="Inter" font-size="8.5" font-weight="700" fill="#9d174d" letter-spacing=".1em">TRAEFIK — VIP / ACTIVE-ACTIVE LAYER</text>
 
-<!-- HAProxy 1 — x=30 w=420 y=120 h=126 -->
-<rect x="30" y="120" width="420" height="126" rx="9" fill="#fff" stroke="#c4b5fd" stroke-width="2" filter="url(#s1)"/>
-<rect x="30" y="120" width="420" height="6" rx="9" fill="#7c3aed"/>
-<rect x="30" y="125" width="420" height="2" fill="#7c3aed"/>
-<!-- icon -->
-<rect x="50" y="138" width="32" height="32" rx="7" fill="#7c3aed"/>
-<text x="66" y="159" text-anchor="middle" font-family="Inter" font-size="14" font-weight="800" fill="#fff">H</text>
-<text x="94" y="152" font-family="Inter" font-size="12" font-weight="700" fill="#4c1d95">HAProxy 1</text>
-<text x="94" y="165" font-family="JetBrains Mono" font-size="8.5" fill="#7c3aed">172.20.0.21  ·  PRIMARY</text>
-<line x1="50" y1="176" x2="434" y2="176" stroke="#ede9fe" stroke-width="1"/>
-<!-- port pills -->
-<rect x="50" y="183" width="98" height="22" rx="11" fill="#ede9fe"/>
-<text x="99" y="198" text-anchor="middle" font-family="JetBrains Mono" font-size="8.5" font-weight="700" fill="#7c3aed">:3306  WRITE</text>
-<rect x="158" y="183" width="92" height="22" rx="11" fill="#dbeafe"/>
-<text x="204" y="198" text-anchor="middle" font-family="JetBrains Mono" font-size="8.5" font-weight="700" fill="#1d4ed8">:3307  READ</text>
-<rect x="260" y="183" width="92" height="22" rx="11" fill="#fef3c7"/>
-<text x="306" y="198" text-anchor="middle" font-family="JetBrains Mono" font-size="8.5" font-weight="700" fill="#92400e">:8404  STATS</text>
-<text x="50" y="234" font-family="Inter" font-size="8" fill="#94a3b8">
-  Write: <tspan font-weight="700" fill="#7c3aed">balance first</tspan>
-  <tspan dx="8">Read: </tspan><tspan font-weight="700" fill="#1d4ed8">balance roundrobin</tspan>
-  <tspan dx="8">Health: </tspan><tspan font-weight="700" fill="#15803d">mysql-check</tspan>
-</text>
+<!-- Traefik box centered -->
+<rect x="390" y="114" width="520" height="70" rx="9" fill="#fff" stroke="#fda4af" stroke-width="2" filter="url(#s1)"/>
+<rect x="390" y="114" width="520" height="6" rx="9" fill="#be185d"/>
+<rect x="390" y="118" width="520" height="2" fill="#be185d"/>
+<rect x="410" y="130" width="30" height="30" rx="6" fill="#be185d"/>
+<text x="425" y="150" text-anchor="middle" font-family="Inter" font-size="13" font-weight="800" fill="#fff">T</text>
+<text x="454" y="144" font-family="Inter" font-size="12" font-weight="700" fill="#9f1239">Traefik</text>
+<text x="454" y="158" font-family="JetBrains Mono" font-size="8.5" fill="#be185d">172.20.0.20  ·  :3306 write  ·  :3307 read  ·  :8080 dashboard</text>
+<!-- Active/Active badge -->
+<rect x="760" y="130" width="110" height="20" rx="10" fill="#fce7f3" stroke="#fda4af" stroke-width="1"/>
+<text x="815" y="144" text-anchor="middle" font-family="Inter" font-size="8" font-weight="700" fill="#9d174d">⚡ ACTIVE / ACTIVE</text>
+<!-- RR note -->
+<rect x="760" y="155" width="110" height="20" rx="10" fill="#f0fdf4" stroke="#86efac" stroke-width="1"/>
+<text x="815" y="169" text-anchor="middle" font-family="Inter" font-size="8" font-weight="700" fill="#15803d">round-robin</text>
 
-<!-- HAProxy 2 — x=850 w=420 y=120 h=126 -->
-<rect x="850" y="120" width="420" height="126" rx="9" fill="#fff" stroke="#c4b5fd" stroke-width="2" filter="url(#s1)"/>
-<rect x="850" y="120" width="420" height="6" rx="9" fill="#7c3aed"/>
-<rect x="850" y="125" width="420" height="2" fill="#7c3aed"/>
-<rect x="870" y="138" width="32" height="32" rx="7" fill="#7c3aed"/>
-<text x="886" y="159" text-anchor="middle" font-family="Inter" font-size="14" font-weight="800" fill="#fff">H</text>
-<text x="914" y="152" font-family="Inter" font-size="12" font-weight="700" fill="#4c1d95">HAProxy 2</text>
-<text x="914" y="165" font-family="JetBrains Mono" font-size="8.5" fill="#7c3aed">172.20.0.22  ·  SECONDARY</text>
-<line x1="870" y1="176" x2="1254" y2="176" stroke="#ede9fe" stroke-width="1"/>
-<rect x="870" y="183" width="98" height="22" rx="11" fill="#ede9fe"/>
-<text x="919" y="198" text-anchor="middle" font-family="JetBrains Mono" font-size="8.5" font-weight="700" fill="#7c3aed">:3316  WRITE</text>
-<rect x="978" y="183" width="92" height="22" rx="11" fill="#dbeafe"/>
-<text x="1024" y="198" text-anchor="middle" font-family="JetBrains Mono" font-size="8.5" font-weight="700" fill="#1d4ed8">:3317  READ</text>
-<rect x="1080" y="183" width="92" height="22" rx="11" fill="#fef3c7"/>
-<text x="1126" y="198" text-anchor="middle" font-family="JetBrains Mono" font-size="8.5" font-weight="700" fill="#92400e">:8405  STATS</text>
-<text x="870" y="234" font-family="Inter" font-size="8" fill="#94a3b8">
-  Write: <tspan font-weight="700" fill="#7c3aed">balance first</tspan>
-  <tspan dx="8">Read: </tspan><tspan font-weight="700" fill="#1d4ed8">balance roundrobin</tspan>
-  <tspan dx="8">Health: </tspan><tspan font-weight="700" fill="#15803d">mysql-check</tspan>
-</text>
+<!-- traefik → haproxy1 arrow -->
+<line x1="530" y1="184" x2="250" y2="222" stroke="#be185d" stroke-width="2.5" marker-end="url(#mk)"/>
+<!-- traefik → haproxy2 arrow -->
+<line x1="770" y1="184" x2="1050" y2="222" stroke="#be185d" stroke-width="2.5" marker-end="url(#mk)"/>
 
-<!-- ── CLIENT → HAPROXY ARROWS ──
-  Client left  = 500,46  → left to 240,46  → down to HA1 top 240,120
-  Client right = 800,46  → right to 1060,46 → down to HA2 top 1060,120
--->
-<polyline points="500,46 240,46 240,120" fill="none" stroke="#7c3aed" stroke-width="2.5" stroke-linejoin="round" marker-end="url(#mp)"/>
-<rect x="254" y="34" width="100" height="18" rx="5" fill="#f5f3ff" stroke="#c4b5fd" stroke-width="1"/>
-<text x="304" y="47" text-anchor="middle" font-family="Inter" font-size="8.5" font-weight="600" fill="#7c3aed">Primary LB</text>
+<!-- ── ZONE: HA LAYER y=218 h=130 ── -->
+<rect x="10" y="218" width="1280" height="130" rx="10" fill="#faf5ff" stroke="#ddd6fe" stroke-width="1.2"/>
+<text x="26" y="234" font-family="Inter" font-size="8.5" font-weight="700" fill="#7c3aed" letter-spacing=".1em">HAPROXY — LOAD BALANCER LAYER</text>
 
-<polyline points="800,46 1060,46 1060,120" fill="none" stroke="#7c3aed" stroke-width="2.5" stroke-linejoin="round" marker-end="url(#mp)"/>
-<rect x="946" y="34" width="100" height="18" rx="5" fill="#f5f3ff" stroke="#c4b5fd" stroke-width="1"/>
-<text x="996" y="47" text-anchor="middle" font-family="Inter" font-size="8.5" font-weight="600" fill="#7c3aed">Failover LB</text>
+<!-- HAProxy 1 — x=30 w=400 -->
+<rect x="30" y="226" width="400" height="112" rx="9" fill="#fff" stroke="#c4b5fd" stroke-width="2" filter="url(#s1)"/>
+<rect x="30" y="226" width="400" height="6" rx="9" fill="#7c3aed"/>
+<rect x="30" y="230" width="400" height="2" fill="#7c3aed"/>
+<rect x="50" y="244" width="30" height="30" rx="7" fill="#7c3aed"/>
+<text x="65" y="264" text-anchor="middle" font-family="Inter" font-size="13" font-weight="800" fill="#fff">H</text>
+<text x="92" y="258" font-family="Inter" font-size="11" font-weight="700" fill="#4c1d95">HAProxy 1</text>
+<rect x="92" y="264" width="48" height="16" rx="8" fill="#d1fae5" stroke="#6ee7b7" stroke-width="1"/>
+<text x="116" y="275" text-anchor="middle" font-family="Inter" font-size="7.5" font-weight="700" fill="#065f46">ACTIVE</text>
+<text x="50" y="296" font-family="JetBrains Mono" font-size="8" fill="#6b7280">172.20.0.21  ·  :8404 stats</text>
+<text x="50" y="310" font-family="Inter" font-size="8" fill="#6b7280">write → balance first   ·   read → roundrobin</text>
+<!-- health check badge -->
+<rect x="50" y="320" width="170" height="14" rx="4" fill="#f5f3ff"/>
+<text x="135" y="330" text-anchor="middle" font-family="JetBrains Mono" font-size="7" fill="#7c3aed">mysql-check · inter 3s · fall 3 · rise 2</text>
 
-<!-- ── ZONE: CLUSTER y=284 h=200 ── -->
-<rect x="10" y="284" width="1280" height="200" rx="10" fill="#eff6ff" stroke="#bfdbfe" stroke-width="1.2"/>
-<text x="26" y="300" font-family="Inter" font-size="8.5" font-weight="700" fill="#1d4ed8" letter-spacing=".1em">GALERA CLUSTER  ·  pxc-cluster  ·  172.20.0.0/24</text>
+<!-- HAProxy 2 — x=870 w=400 -->
+<rect x="870" y="226" width="400" height="112" rx="9" fill="#fff" stroke="#c4b5fd" stroke-width="2" filter="url(#s1)"/>
+<rect x="870" y="226" width="400" height="6" rx="9" fill="#7c3aed"/>
+<rect x="870" y="230" width="400" height="2" fill="#7c3aed"/>
+<rect x="890" y="244" width="30" height="30" rx="7" fill="#7c3aed"/>
+<text x="905" y="264" text-anchor="middle" font-family="Inter" font-size="13" font-weight="800" fill="#fff">H</text>
+<text x="932" y="258" font-family="Inter" font-size="11" font-weight="700" fill="#4c1d95">HAProxy 2</text>
+<rect x="932" y="264" width="48" height="16" rx="8" fill="#d1fae5" stroke="#6ee7b7" stroke-width="1"/>
+<text x="956" y="275" text-anchor="middle" font-family="Inter" font-size="7.5" font-weight="700" fill="#065f46">ACTIVE</text>
+<text x="890" y="296" font-family="JetBrains Mono" font-size="8" fill="#6b7280">172.20.0.22  ·  :8405 stats</text>
+<text x="890" y="310" font-family="Inter" font-size="8" fill="#6b7280">write → balance first   ·   read → roundrobin</text>
+<rect x="890" y="320" width="170" height="14" rx="4" fill="#f5f3ff"/>
+<text x="975" y="330" text-anchor="middle" font-family="JetBrains Mono" font-size="7" fill="#7c3aed">mysql-check · inter 3s · fall 3 · rise 2</text>
 
-<!-- pxc1 x=30 w=300 y=302 h=170 center-x=180 -->
-<rect x="30" y="302" width="300" height="170" rx="9" fill="#fff" stroke="#93c5fd" stroke-width="2" filter="url(#s1)"/>
-<rect x="30" y="302" width="300" height="6" rx="9" fill="#2563eb"/>
-<rect x="30" y="306" width="300" height="2" fill="#2563eb"/>
-<rect x="50" y="320" width="30" height="30" rx="6" fill="#2563eb"/>
-<text x="65" y="340" text-anchor="middle" font-family="JetBrains Mono" font-size="10" font-weight="700" fill="#fff">DB</text>
-<text x="92" y="333" font-family="Inter" font-size="12" font-weight="700" fill="#1e3a8a">pxc1</text>
-<text x="92" y="347" font-family="JetBrains Mono" font-size="8" fill="#3b82f6">172.20.0.11  ·  :3311</text>
-<line x1="50" y1="358" x2="314" y2="358" stroke="#dbeafe" stroke-width="1"/>
-<text x="50" y="372" font-family="Inter" font-size="8.5" fill="#64748b">Role</text>     <text x="120" y="372" font-family="Inter" font-size="8.5" font-weight="600" fill="#1d4ed8">Bootstrap Node</text>
-<text x="50" y="386" font-family="Inter" font-size="8.5" fill="#64748b">server-id</text><text x="120" y="386" font-family="JetBrains Mono" font-size="8.5" fill="#374151">1</text>
-<text x="50" y="400" font-family="Inter" font-size="8.5" fill="#64748b">SST</text>      <text x="120" y="400" font-family="JetBrains Mono" font-size="8.5" fill="#374151">xtrabackup-v2</text>
-<text x="50" y="414" font-family="Inter" font-size="8.5" fill="#64748b">Volume</text>   <text x="120" y="414" font-family="JetBrains Mono" font-size="8.5" fill="#374151">pxc1-data</text>
-<text x="50" y="428" font-family="Inter" font-size="8.5" fill="#64748b">gcomm</text>    <text x="120" y="428" font-family="JetBrains Mono" font-size="8.5" fill="#374151">pxc1,pxc2,pxc3</text>
-<rect x="50" y="438" width="76" height="18" rx="9" fill="#d1fae5"/>
-<circle cx="64" cy="447" r="4" fill="#10b981"/>
-<text x="76" y="451" font-family="Inter" font-size="8.5" font-weight="600" fill="#065f46">Synced</text>
+<!-- ── ZONE: CLUSTER y=372 h=200 ── -->
+<rect x="10" y="372" width="1280" height="200" rx="10" fill="#eff6ff" stroke="#bfdbfe" stroke-width="1.2"/>
+<text x="26" y="388" font-family="Inter" font-size="8.5" font-weight="700" fill="#1d4ed8" letter-spacing=".1em">PERCONA XTRADB CLUSTER — GALERA MULTI-MASTER</text>
 
-<!-- pxc2 x=500 w=300 center-x=650 -->
-<rect x="500" y="302" width="300" height="170" rx="9" fill="#fff" stroke="#93c5fd" stroke-width="2" filter="url(#s1)"/>
-<rect x="500" y="302" width="300" height="6" rx="9" fill="#2563eb"/>
-<rect x="500" y="306" width="300" height="2" fill="#2563eb"/>
-<rect x="520" y="320" width="30" height="30" rx="6" fill="#2563eb"/>
-<text x="535" y="340" text-anchor="middle" font-family="JetBrains Mono" font-size="10" font-weight="700" fill="#fff">DB</text>
-<text x="562" y="333" font-family="Inter" font-size="12" font-weight="700" fill="#1e3a8a">pxc2</text>
-<text x="562" y="347" font-family="JetBrains Mono" font-size="8" fill="#3b82f6">172.20.0.12  ·  :3312</text>
-<line x1="520" y1="358" x2="784" y2="358" stroke="#dbeafe" stroke-width="1"/>
-<text x="520" y="372" font-family="Inter" font-size="8.5" fill="#64748b">Role</text>     <text x="590" y="372" font-family="Inter" font-size="8.5" font-weight="600" fill="#374151">Member Node</text>
-<text x="520" y="386" font-family="Inter" font-size="8.5" fill="#64748b">server-id</text><text x="590" y="386" font-family="JetBrains Mono" font-size="8.5" fill="#374151">2</text>
-<text x="520" y="400" font-family="Inter" font-size="8.5" fill="#64748b">SST</text>      <text x="590" y="400" font-family="JetBrains Mono" font-size="8.5" fill="#374151">xtrabackup-v2</text>
-<text x="520" y="414" font-family="Inter" font-size="8.5" fill="#64748b">Volume</text>   <text x="590" y="414" font-family="JetBrains Mono" font-size="8.5" fill="#374151">pxc2-data</text>
-<text x="520" y="428" font-family="Inter" font-size="8.5" fill="#64748b">gcomm</text>    <text x="590" y="428" font-family="JetBrains Mono" font-size="8.5" fill="#374151">pxc1,pxc2,pxc3</text>
-<rect x="520" y="438" width="76" height="18" rx="9" fill="#d1fae5"/>
-<circle cx="534" cy="447" r="4" fill="#10b981"/>
-<text x="546" y="451" font-family="Inter" font-size="8.5" font-weight="600" fill="#065f46">Synced</text>
+<!-- HA1 → pxc nodes -->
+<line x1="180" y1="338" x2="180" y2="396" stroke="#7c3aed" stroke-width="2.5" marker-end="url(#mp)"/>
+<rect x="140" y="358" width="80" height="18" rx="5" fill="#fff" stroke="#c4b5fd" stroke-width="1"/>
+<text x="180" y="371" text-anchor="middle" font-family="Inter" font-size="8" font-weight="700" fill="#7c3aed">Write (first)</text>
 
-<!-- pxc3 x=970 w=300 center-x=1120 -->
-<rect x="970" y="302" width="300" height="170" rx="9" fill="#fff" stroke="#93c5fd" stroke-width="2" filter="url(#s1)"/>
-<rect x="970" y="302" width="300" height="6" rx="9" fill="#2563eb"/>
-<rect x="970" y="306" width="300" height="2" fill="#2563eb"/>
-<rect x="990" y="320" width="30" height="30" rx="6" fill="#2563eb"/>
-<text x="1005" y="340" text-anchor="middle" font-family="JetBrains Mono" font-size="10" font-weight="700" fill="#fff">DB</text>
-<text x="1032" y="333" font-family="Inter" font-size="12" font-weight="700" fill="#1e3a8a">pxc3</text>
-<text x="1032" y="347" font-family="JetBrains Mono" font-size="8" fill="#3b82f6">172.20.0.13  ·  :3313</text>
-<line x1="990" y1="358" x2="1254" y2="358" stroke="#dbeafe" stroke-width="1"/>
-<text x="990" y="372" font-family="Inter" font-size="8.5" fill="#64748b">Role</text>     <text x="1060" y="372" font-family="Inter" font-size="8.5" font-weight="600" fill="#374151">Member Node</text>
-<text x="990" y="386" font-family="Inter" font-size="8.5" fill="#64748b">server-id</text><text x="1060" y="386" font-family="JetBrains Mono" font-size="8.5" fill="#374151">3</text>
-<text x="990" y="400" font-family="Inter" font-size="8.5" fill="#64748b">SST</text>      <text x="1060" y="400" font-family="JetBrains Mono" font-size="8.5" fill="#374151">xtrabackup-v2</text>
-<text x="990" y="414" font-family="Inter" font-size="8.5" fill="#64748b">Volume</text>   <text x="1060" y="414" font-family="JetBrains Mono" font-size="8.5" fill="#374151">pxc3-data</text>
-<text x="990" y="428" font-family="Inter" font-size="8.5" fill="#64748b">gcomm</text>    <text x="1060" y="428" font-family="JetBrains Mono" font-size="8.5" fill="#374151">pxc1,pxc2,pxc3</text>
-<rect x="990" y="438" width="76" height="18" rx="9" fill="#d1fae5"/>
-<circle cx="1004" cy="447" r="4" fill="#10b981"/>
-<text x="1016" y="451" font-family="Inter" font-size="8.5" font-weight="600" fill="#065f46">Synced</text>
+<line x1="280" y1="338" x2="580" y2="396" stroke="#2563eb" stroke-width="1.5" stroke-dasharray="6,4" marker-end="url(#mbd)"/>
+<rect x="350" y="352" width="76" height="18" rx="5" fill="#eff6ff" stroke="#bfdbfe" stroke-width="1"/>
+<text x="388" y="365" text-anchor="middle" font-family="Inter" font-size="8" font-weight="700" fill="#1d4ed8">Read (RR)</text>
 
-<!-- ── HAPROXY → PXC ARROWS ──
-  HA1 bottom = y=246, center-x=240
-  HA2 bottom = y=246, center-x=1060
-  pxc tops   = y=302
-  pxc1 cx=180  pxc2 cx=650  pxc3 cx=1120
--->
-<!-- HA1 → pxc1 write (straight down) -->
-<line x1="170" y1="246" x2="170" y2="302" stroke="#7c3aed" stroke-width="3" marker-end="url(#mp)"/>
-<rect x="130" y="266" width="80" height="18" rx="5" fill="#fff" stroke="#c4b5fd" stroke-width="1"/>
-<text x="170" y="279" text-anchor="middle" font-family="Inter" font-size="8" font-weight="700" fill="#7c3aed">Write (first)</text>
+<!-- HA2 → pxc nodes -->
+<line x1="1120" y1="338" x2="1120" y2="396" stroke="#7c3aed" stroke-width="2.5" marker-end="url(#mp)"/>
+<rect x="1080" y="358" width="80" height="18" rx="5" fill="#fff" stroke="#c4b5fd" stroke-width="1"/>
+<text x="1120" y="371" text-anchor="middle" font-family="Inter" font-size="8" font-weight="700" fill="#7c3aed">Write (first)</text>
 
-<!-- HA1 → pxc2 read (diagonal) -->
-<line x1="260" y1="246" x2="590" y2="302" stroke="#2563eb" stroke-width="2" stroke-dasharray="6,4" marker-end="url(#mbd)"/>
-<!-- HA1 → pxc3 read (long diagonal, faint) -->
-<line x1="300" y1="246" x2="1010" y2="302" stroke="#3b82f6" stroke-width="1.5" stroke-dasharray="6,4" opacity=".3" marker-end="url(#mbd)"/>
-<rect x="348" y="258" width="76" height="18" rx="5" fill="#eff6ff" stroke="#bfdbfe" stroke-width="1"/>
-<text x="386" y="271" text-anchor="middle" font-family="Inter" font-size="8" font-weight="700" fill="#1d4ed8">Read (RR)</text>
+<line x1="1020" y1="338" x2="720" y2="396" stroke="#2563eb" stroke-width="1.5" stroke-dasharray="6,4" marker-end="url(#mbd)"/>
+<rect x="872" y="352" width="76" height="18" rx="5" fill="#eff6ff" stroke="#bfdbfe" stroke-width="1"/>
+<text x="910" y="365" text-anchor="middle" font-family="Inter" font-size="8" font-weight="700" fill="#1d4ed8">Read (RR)</text>
 
-<!-- HA2 → pxc3 write (straight down) -->
-<line x1="1130" y1="246" x2="1130" y2="302" stroke="#7c3aed" stroke-width="3" marker-end="url(#mp)"/>
-<rect x="1090" y="266" width="80" height="18" rx="5" fill="#fff" stroke="#c4b5fd" stroke-width="1"/>
-<text x="1130" y="279" text-anchor="middle" font-family="Inter" font-size="8" font-weight="700" fill="#7c3aed">Write (first)</text>
+<!-- pxc1 -->
+<rect x="60" y="396" width="280" height="164" rx="9" fill="#fff" stroke="#93c5fd" stroke-width="2" filter="url(#s1)"/>
+<rect x="60" y="396" width="280" height="6" rx="9" fill="#2563eb"/>
+<rect x="60" y="400" width="280" height="2" fill="#2563eb"/>
+<rect x="80" y="414" width="28" height="28" rx="6" fill="#2563eb"/>
+<text x="94" y="432" text-anchor="middle" font-family="JetBrains Mono" font-size="10" font-weight="700" fill="#fff">db</text>
+<text x="120" y="428" font-family="Inter" font-size="11" font-weight="700" fill="#1e3a8a">pxc1</text>
+<rect x="166" y="416" width="80" height="16" rx="8" fill="#dbeafe"/>
+<text x="206" y="427" text-anchor="middle" font-family="Inter" font-size="7.5" font-weight="700" fill="#1d4ed8">Bootstrap</text>
+<text x="80" y="458" font-family="JetBrains Mono" font-size="8" fill="#6b7280">172.20.0.11  ·  :3311</text>
+<text x="80" y="472" font-family="Inter" font-size="8" fill="#374151">server_id: 1</text>
+<text x="80" y="486" font-family="Inter" font-size="8" fill="#374151">wsrep_cluster_address:</text>
+<text x="80" y="498" font-family="JetBrains Mono" font-size="7.5" fill="#2563eb">gcomm://pxc1,pxc2,pxc3</text>
+<text x="80" y="514" font-family="Inter" font-size="8" fill="#374151">SST: xtrabackup-v2</text>
+<rect x="80" y="524" width="120" height="14" rx="4" fill="#dbeafe"/>
+<text x="140" y="534" text-anchor="middle" font-family="JetBrains Mono" font-size="7" fill="#1d4ed8">wsrep_synced ✓</text>
 
-<!-- HA2 → pxc2 read (diagonal) -->
-<line x1="1040" y1="246" x2="710" y2="302" stroke="#2563eb" stroke-width="2" stroke-dasharray="6,4" marker-end="url(#mbd)"/>
-<!-- HA2 → pxc1 read (long diagonal, faint) -->
-<line x1="1000" y1="246" x2="290" y2="302" stroke="#3b82f6" stroke-width="1.5" stroke-dasharray="6,4" opacity=".3" marker-end="url(#mbd)"/>
-<rect x="876" y="258" width="76" height="18" rx="5" fill="#eff6ff" stroke="#bfdbfe" stroke-width="1"/>
-<text x="914" y="271" text-anchor="middle" font-family="Inter" font-size="8" font-weight="700" fill="#1d4ed8">Read (RR)</text>
+<!-- pxc2 -->
+<rect x="510" y="396" width="280" height="164" rx="9" fill="#fff" stroke="#93c5fd" stroke-width="2" filter="url(#s1)"/>
+<rect x="510" y="396" width="280" height="6" rx="9" fill="#2563eb"/>
+<rect x="510" y="400" width="280" height="2" fill="#2563eb"/>
+<rect x="530" y="414" width="28" height="28" rx="6" fill="#2563eb"/>
+<text x="544" y="432" text-anchor="middle" font-family="JetBrains Mono" font-size="10" font-weight="700" fill="#fff">db</text>
+<text x="570" y="428" font-family="Inter" font-size="11" font-weight="700" fill="#1e3a8a">pxc2</text>
+<rect x="616" y="416" width="60" height="16" rx="8" fill="#dbeafe"/>
+<text x="646" y="427" text-anchor="middle" font-family="Inter" font-size="7.5" font-weight="700" fill="#1d4ed8">Member</text>
+<text x="530" y="458" font-family="JetBrains Mono" font-size="8" fill="#6b7280">172.20.0.12  ·  :3312</text>
+<text x="530" y="472" font-family="Inter" font-size="8" fill="#374151">server_id: 2</text>
+<text x="530" y="486" font-family="Inter" font-size="8" fill="#374151">wsrep_cluster_address:</text>
+<text x="530" y="498" font-family="JetBrains Mono" font-size="7.5" fill="#2563eb">gcomm://pxc1,pxc2,pxc3</text>
+<text x="530" y="514" font-family="Inter" font-size="8" fill="#374151">SST: xtrabackup-v2</text>
+<rect x="530" y="524" width="120" height="14" rx="4" fill="#dbeafe"/>
+<text x="590" y="534" text-anchor="middle" font-family="JetBrains Mono" font-size="7" fill="#1d4ed8">wsrep_synced ✓</text>
 
-<!-- ── GALERA SYNC ──
-  nodes bottom=472, sync at y≈430
-  pxc1 right=330  pxc2 left=500  pxc2 right=800  pxc3 left=970
--->
-<line x1="330" y1="428" x2="500" y2="428" stroke="url(#sg)" stroke-width="3" marker-end="url(#mb)"/>
-<line x1="500" y1="442" x2="330" y2="442" stroke="url(#sg)" stroke-width="3" marker-end="url(#mb)"/>
-<rect x="332" y="413" width="84" height="16" rx="4" fill="#eff6ff" stroke="#bfdbfe" stroke-width="1"/>
-<text x="374" y="424" text-anchor="middle" font-family="JetBrains Mono" font-size="7.5" font-weight="600" fill="#1d4ed8">wsrep sync</text>
+<!-- pxc3 -->
+<rect x="960" y="396" width="280" height="164" rx="9" fill="#fff" stroke="#93c5fd" stroke-width="2" filter="url(#s1)"/>
+<rect x="960" y="396" width="280" height="6" rx="9" fill="#2563eb"/>
+<rect x="960" y="400" width="280" height="2" fill="#2563eb"/>
+<rect x="980" y="414" width="28" height="28" rx="6" fill="#2563eb"/>
+<text x="994" y="432" text-anchor="middle" font-family="JetBrains Mono" font-size="10" font-weight="700" fill="#fff">db</text>
+<text x="1020" y="428" font-family="Inter" font-size="11" font-weight="700" fill="#1e3a8a">pxc3</text>
+<rect x="1066" y="416" width="60" height="16" rx="8" fill="#dbeafe"/>
+<text x="1096" y="427" text-anchor="middle" font-family="Inter" font-size="7.5" font-weight="700" fill="#1d4ed8">Member</text>
+<text x="980" y="458" font-family="JetBrains Mono" font-size="8" fill="#6b7280">172.20.0.13  ·  :3313</text>
+<text x="980" y="472" font-family="Inter" font-size="8" fill="#374151">server_id: 3</text>
+<text x="980" y="486" font-family="Inter" font-size="8" fill="#374151">wsrep_cluster_address:</text>
+<text x="980" y="498" font-family="JetBrains Mono" font-size="7.5" fill="#2563eb">gcomm://pxc1,pxc2,pxc3</text>
+<text x="980" y="514" font-family="Inter" font-size="8" fill="#374151">SST: xtrabackup-v2</text>
+<rect x="980" y="524" width="120" height="14" rx="4" fill="#dbeafe"/>
+<text x="1040" y="534" text-anchor="middle" font-family="JetBrains Mono" font-size="7" fill="#1d4ed8">wsrep_synced ✓</text>
 
-<line x1="800" y1="428" x2="970" y2="428" stroke="url(#sg)" stroke-width="3" marker-end="url(#mb)"/>
-<line x1="970" y1="442" x2="800" y2="442" stroke="url(#sg)" stroke-width="3" marker-end="url(#mb)"/>
-<rect x="802" y="413" width="84" height="16" rx="4" fill="#eff6ff" stroke="#bfdbfe" stroke-width="1"/>
-<text x="844" y="424" text-anchor="middle" font-family="JetBrains Mono" font-size="7.5" font-weight="600" fill="#1d4ed8">wsrep sync</text>
+<!-- Galera sync arrows -->
+<line x1="340" y1="474" x2="510" y2="474" stroke="url(#sg)" stroke-width="3" marker-end="url(#mb)"/>
+<line x1="510" y1="488" x2="340" y2="488" stroke="url(#sg)" stroke-width="3" marker-end="url(#mb)"/>
+<rect x="342" y="459" width="84" height="16" rx="4" fill="#eff6ff" stroke="#bfdbfe" stroke-width="1"/>
+<text x="384" y="470" text-anchor="middle" font-family="JetBrains Mono" font-size="7.5" font-weight="600" fill="#1d4ed8">wsrep sync</text>
 
-<!-- pxc1 ↔ pxc3 arc -->
-<path d="M 180 302 Q 650 274 1120 302" fill="none" stroke="#93c5fd" stroke-width="2" stroke-dasharray="7,5"/>
-<rect x="598" y="270" width="104" height="16" rx="4" fill="#eff6ff" stroke="#bfdbfe" stroke-width="1"/>
-<text x="650" y="281" text-anchor="middle" font-family="JetBrains Mono" font-size="7.5" font-weight="600" fill="#3b82f6">cross-node sync</text>
+<line x1="790" y1="474" x2="960" y2="474" stroke="url(#sg)" stroke-width="3" marker-end="url(#mb)"/>
+<line x1="960" y1="488" x2="790" y2="488" stroke="url(#sg)" stroke-width="3" marker-end="url(#mb)"/>
+<rect x="792" y="459" width="84" height="16" rx="4" fill="#eff6ff" stroke="#bfdbfe" stroke-width="1"/>
+<text x="834" y="470" text-anchor="middle" font-family="JetBrains Mono" font-size="7.5" font-weight="600" fill="#1d4ed8">wsrep sync</text>
 
-<!-- ── ZONE: PMM y=508 h=92 ── -->
-<rect x="10" y="508" width="1280" height="92" rx="10" fill="#f0fdf4" stroke="#bbf7d0" stroke-width="1.2"/>
-<text x="26" y="524" font-family="Inter" font-size="8.5" font-weight="700" fill="#15803d" letter-spacing=".1em">MONITORING LAYER</text>
+<path d="M 170 400 Q 650 370 1130 400" fill="none" stroke="#93c5fd" stroke-width="1.5" stroke-dasharray="7,5"/>
+<rect x="598" y="366" width="104" height="16" rx="4" fill="#eff6ff" stroke="#bfdbfe" stroke-width="1"/>
+<text x="650" y="377" text-anchor="middle" font-family="JetBrains Mono" font-size="7.5" font-weight="600" fill="#3b82f6">cross-node sync</text>
 
-<!-- PMM box centered x=455 w=390 y=520 h=70 -->
-<rect x="455" y="520" width="390" height="70" rx="9" fill="#fff" stroke="#86efac" stroke-width="2" filter="url(#s1)"/>
-<rect x="455" y="520" width="390" height="6" rx="9" fill="#16a34a"/>
-<rect x="455" y="524" width="390" height="2" fill="#16a34a"/>
-<rect x="474" y="537" width="30" height="30" rx="6" fill="#16a34a"/>
-<text x="489" y="557" text-anchor="middle" font-family="Inter" font-size="12" font-weight="800" fill="#fff">M</text>
-<text x="517" y="551" font-family="Inter" font-size="11" font-weight="700" fill="#14532d">PMM Server</text>
-<text x="517" y="564" font-family="JetBrains Mono" font-size="8.5" fill="#16a34a">172.20.0.30  ·  :80  ·  :443</text>
-<text x="517" y="578" font-family="Inter" font-size="8" fill="#64748b">Grafana · Prometheus · VictoriaMetrics</text>
+<!-- ── ZONE: PMM y=580 h=88 ── -->
+<rect x="10" y="582" width="1280" height="88" rx="10" fill="#f0fdf4" stroke="#bbf7d0" stroke-width="1.2"/>
+<text x="26" y="598" font-family="Inter" font-size="8.5" font-weight="700" fill="#15803d" letter-spacing=".1em">MONITORING LAYER</text>
+<rect x="455" y="600" width="390" height="60" rx="9" fill="#fff" stroke="#86efac" stroke-width="2" filter="url(#s1)"/>
+<rect x="455" y="600" width="390" height="6" rx="9" fill="#16a34a"/>
+<rect x="455" y="604" width="390" height="2" fill="#16a34a"/>
+<rect x="474" y="616" width="28" height="28" rx="6" fill="#16a34a"/>
+<text x="488" y="634" text-anchor="middle" font-family="Inter" font-size="12" font-weight="800" fill="#fff">M</text>
+<text x="514" y="630" font-family="Inter" font-size="11" font-weight="700" fill="#14532d">PMM Server</text>
+<text x="514" y="644" font-family="JetBrains Mono" font-size="8.5" fill="#16a34a">172.20.0.30  ·  :80  ·  :443</text>
+<text x="660" y="630" font-family="Inter" font-size="8" fill="#64748b">Grafana · Prometheus · VictoriaMetrics</text>
 
-<!-- PMM → nodes  (node bottom=472, pmm top=520) -->
-<line x1="530" y1="520" x2="250" y2="472" stroke="#16a34a" stroke-width="2" stroke-dasharray="5,4" marker-end="url(#mg)"/>
-<line x1="650" y1="520" x2="650" y2="472" stroke="#16a34a" stroke-width="2" stroke-dasharray="5,4" marker-end="url(#mg)"/>
-<line x1="770" y1="520" x2="1060" y2="472" stroke="#16a34a" stroke-width="2" stroke-dasharray="5,4" marker-end="url(#mg)"/>
-<rect x="583" y="484" width="134" height="18" rx="5" fill="#f0fdf4" stroke="#86efac" stroke-width="1"/>
-<text x="650" y="497" text-anchor="middle" font-family="Inter" font-size="8.5" font-weight="600" fill="#15803d">PMM Client (agent)</text>
+<!-- PMM → nodes -->
+<line x1="530" y1="600" x2="230" y2="560" stroke="#16a34a" stroke-width="1.5" stroke-dasharray="5,4" marker-end="url(#mg)"/>
+<line x1="650" y1="600" x2="650" y2="560" stroke="#16a34a" stroke-width="1.5" stroke-dasharray="5,4" marker-end="url(#mg)"/>
+<line x1="770" y1="600" x2="1070" y2="560" stroke="#16a34a" stroke-width="1.5" stroke-dasharray="5,4" marker-end="url(#mg)"/>
+<rect x="583" y="556" width="134" height="16" rx="5" fill="#f0fdf4" stroke="#86efac" stroke-width="1"/>
+<text x="650" y="567" text-anchor="middle" font-family="Inter" font-size="8" font-weight="600" fill="#15803d">PMM Remote Agent</text>
 
 </svg>
 </div>
@@ -315,11 +293,10 @@
     <table>
       <thead><tr><th>Servis</th><th>Port</th><th>Tür</th><th>Açıklama</th></tr></thead>
       <tbody>
-        <tr><td>HAProxy 1</td><td class="m">3306</td><td><span class="t tw">Write</span></td><td>balance first</td></tr>
-        <tr><td>HAProxy 1</td><td class="m">3307</td><td><span class="t tr">Read</span></td><td>balance roundrobin</td></tr>
+        <tr><td>Traefik</td><td class="m">3306</td><td><span class="t tw">Write</span></td><td>VIP — HAProxy 1/2 round-robin</td></tr>
+        <tr><td>Traefik</td><td class="m">3307</td><td><span class="t tr">Read</span></td><td>VIP — HAProxy 1/2 round-robin</td></tr>
+        <tr><td>Traefik</td><td class="m">8080</td><td><span class="t tk">Dashboard</span></td><td>—</td></tr>
         <tr><td>HAProxy 1</td><td class="m">8404</td><td><span class="t ty">Stats</span></td><td>admin / admin</td></tr>
-        <tr><td>HAProxy 2</td><td class="m">3316</td><td><span class="t tw">Write</span></td><td>balance first</td></tr>
-        <tr><td>HAProxy 2</td><td class="m">3317</td><td><span class="t tr">Read</span></td><td>balance roundrobin</td></tr>
         <tr><td>HAProxy 2</td><td class="m">8405</td><td><span class="t ty">Stats</span></td><td>admin / admin</td></tr>
         <tr><td>PMM</td><td class="m">443 / 80</td><td><span class="t tg">Monitor</span></td><td>admin / admin</td></tr>
         <tr><td>pxc1</td><td class="m">3311</td><td><span class="t ts">Direct</span></td><td>Bootstrap node</td></tr>
@@ -356,6 +333,7 @@
 </div>
 
 <div class="legend">
+  <div class="li"><div class="ll" style="background:#be185d;height:3px"></div>Traefik VIP (istemci → Traefik)</div>
   <div class="li"><div class="ll" style="background:#7c3aed;height:3px"></div>Write (solid)</div>
   <div class="li"><div class="ll" style="background:repeating-linear-gradient(90deg,#2563eb 0,#2563eb 6px,transparent 6px,transparent 10px)"></div>Read (dashed)</div>
   <div class="li"><div class="ll" style="background:linear-gradient(90deg,#2563eb,#6366f1,#2563eb);height:3px"></div>Galera wsrep Sync</div>
@@ -364,8 +342,8 @@
 </div>
 
 <div class="footer">
-  <span>pxc-ha-case · Docker Compose · Percona XtraDB Cluster 8.0 · HAProxy 2.9 · PMM 2</span>
-  <span>172.20.0.0/24 · 10 Container · 4 Named Volumes</span>
+  <span>pxc-ha-case · Docker Compose · Percona XtraDB Cluster 8.0 · Traefik v3 · HAProxy 2.9 · PMM 2</span>
+  <span>172.20.0.0/24 · 11 Container · 4 Named Volumes</span>
 </div>
 
 </body>
