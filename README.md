@@ -8,6 +8,9 @@
 Percona XtraDB Cluster (Galera Multi-Master) + Dual HAProxy + PMM Monitoring — Docker Compose ile tam otomatik kurulum.
 
 ---
+## Mimari Diyagram
+
+🔗 [Canlı Diyagram](https://mertyakan.github.io/pxc-ha-case/mimari-diyagram-animated.html)
 
 ![PXC HA Cluster Mimari](./ss/mimari-tasarim.png)
 ![PXC HA Cluster Mimari](./ss/mimari-tasarim-2.png)
