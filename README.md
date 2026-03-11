@@ -184,6 +184,25 @@ docker compose start pxc2 pxc3 haproxy1 haproxy2 traefik pmm-server
 
 ---
 
+## Test Scriptleri
+
+Tüm testler `sh/` klasöründe yer alır. 
+
+| Script | Açıklama |
+|--------|----------|
+| `01-rw-cluster-test.sh` | Tüm node'lara write/read yaparak Galera replikasyonunu doğrular. |
+| `02-replication-lag.sh` | Yoğun yazma altında node'lar arası replikasyon gecikmesini ölçer. |
+| `03-consistency-test.sh` | Eş zamanlı yazmalarda veri tutarlılığını (consistency) kontrol eder. |
+| `04-cascading-failure.sh` | pxc3 → pxc2 sırasıyla kapatılır, cluster quorum ve write davranışı gözlemlenir. |
+| `05-ha-proxy-failover.sh` | HAProxy node ve instance failover'ını test eder. |
+| `06-split-brain.sh` | pxc2+pxc3 kapatılır, pxc1 Primary kalır; yeniden join sonrası senkronizasyon doğrulanır. |
+| `07-backup-full-test.sh` | pxc2'den XtraBackup full backup alır, disk arızası simüle eder, restore + IST ile kurtarır. |
+| `08-compress-backup.sh` | pxc2'den compressed backup alır (`.qp`), decompress + prepare + restore döngüsünü test eder. |
+```bash
+bash sh/01-rw-cluster-test.sh
+```
+
+
 ## Backup / Restore (XtraBackup)
 
 ```bash
