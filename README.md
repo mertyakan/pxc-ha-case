@@ -10,7 +10,6 @@ Percona XtraDB Cluster (Galera Multi-Master) + Dual HAProxy + PMM Monitoring —
 ---
 ## Mimari Diyagram
 
-🔗 [Canlı Diyagram](https://mertyakan.github.io/pxc-ha-case/mimari-diyagram-animated.html)
 [![Mimari Diyagram](https://img.shields.io/badge/🔗_Canlı_Diyagram-GitHub_Pages-a371f7?style=for-the-badge)](https://mertyakan.github.io/pxc-ha-case/mimari-diyagram-animated.html)
 
 ![PXC HA Cluster Mimari](./ss/mimari-tasarim.png)
