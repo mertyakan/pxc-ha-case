@@ -1,3 +1,8 @@
+![Percona](https://img.shields.io/badge/Percona-XtraDB%20Cluster-orange)
+![Galera](https://img.shields.io/badge/Galera-Synchronous%20Replication-blue)
+![Docker](https://img.shields.io/badge/Docker-Compose-blue)
+![HA](https://img.shields.io/badge/High%20Availability-Cluster-green)
+
 # PXC High Availability Cluster
 
 Percona XtraDB Cluster (Galera Multi-Master) + Dual HAProxy + PMM Monitoring — Docker Compose ile tam otomatik kurulum.
