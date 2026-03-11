@@ -133,36 +133,6 @@ docker exec pxc1 mysql -uroot -p$(cat secrets/mysql_root_password.txt) \
 
 ---
 
-## Sağlıklı Kapatma
-
-Galera için sıralı kapatma önemlidir — en son kapanan node `safe_to_bootstrap: 1` olarak işaretlenir.
-
-```bash
-docker compose stop pxc3 pxc2 pxc1 haproxy1 haproxy2 pmm-server
-```
-
-## Yeniden Başlatma
-
-```bash
-docker compose start pxc1
-# pxc1 healthy olduktan sonra
-docker compose start pxc2 pxc3 haproxy1 haproxy2 pmm-server
-```
-
----
-
-## Split-Brain Recovery
-
-Cluster NON-PRIMARY durumuna düşerse:
-
-```bash
-./recovery.sh
-```
-
-Manuel adımlar için `recovery.sh` dosyasını inceleyin.
-
----
-
 ## Backup / Restore (XtraBackup)
 
 ```bash
@@ -187,27 +157,5 @@ docker run --rm -v $(pwd)/backups:/backups \
 
 ---
 
-## Galera Quorum
-
-| Node Durumu | Cluster | Yazma |
-|-------------|---------|-------|
-| 3/3 node | PRIMARY | ✓ Açık |
-| 2/3 node | PRIMARY | ✓ Açık |
-| 1/3 node | NON-PRIMARY | ✗ Kapalı |
-
----
-
-## Gereksinimler
-
-- Docker Engine 24+
-- Docker Compose v2
-- 4GB+ RAM (3 PXC node + HAProxy + PMM)
-- macOS / Linux
-
----
-
-## Notlar
-
-- `pxc_encrypt_cluster_traffic = OFF` — lab ortamı için. Production'da `ON` yapılmalı.
 - HAProxy çift kurulum Keepalived olmadan çalışır — farklı portlar üzerinden (3306/3316). VIP failover için Keepalived eklenmeli.
 - PMM node kaydı otomatik kurulumda zaman zaman timing sorunu yaşayabilir, elle UI üzerinden eklenebilir.
