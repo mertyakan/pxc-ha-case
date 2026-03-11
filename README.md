@@ -30,7 +30,6 @@ Uygulama / İstemci
                     PMM Server (172.20.0.30)  :80 / :443
 ```
 
-**Network:** `172.20.0.0/24`  
 **Replication:** Synchronous (Galera)  
 **SST Method:** xtrabackup-v2  
 **Quorum:** 2/3 node gerekli — 1 node kaybında cluster ayakta kalır
@@ -43,7 +42,7 @@ Uygulama / İstemci
 pxc-ha-case/
 ├── docker-compose.yml            # Tüm servisler ve bağımlılık zinciri
 ├── setup.sh                      # Otomatik kurulum scripti
-├── cluster-status.sh             # Canlı cluster durum dashboard'u
+├── check-cluster.sh             # Canlı cluster durum dashboard'u
 ├── haproxy/
 │   ├── haproxy1.cfg              # HAProxy 1 konfigürasyonu
 │   └── haproxy2.cfg              # HAProxy 2 konfigürasyonu
@@ -130,7 +129,7 @@ pxc1 sağlıklı olduğu sürece tüm write trafiği oraya gider. pxc1 düşerse
 ## Cluster Durumu
 
 ```bash
-./cluster-status.sh
+./check-cluster.sh
 ```
 
 Manuel kontrol:
