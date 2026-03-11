@@ -9,6 +9,10 @@ Percona XtraDB Cluster (Galera Multi-Master) + Dual HAProxy + PMM Monitoring —
 
 ---
 
+![PXC HA Cluster Mimari](./ss/mimari-tasarim.png)
+![PXC HA Cluster Mimari](./ss/mimari-tasarim-2.png)
+
+
 ## Mimari
 
 ```
