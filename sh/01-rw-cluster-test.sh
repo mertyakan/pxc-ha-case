@@ -165,7 +165,8 @@ docker run --rm --network "$NETWORK" "$MYSQL_IMG" bash -c \
    -NBe \"SELECT @@hostname;\" 2>/dev/null; done" > /tmp/aa_writer2.txt &
 PID2=$!
 
-wait $PID1 $PID2
+wait $PID1 || true
+wait $PID2 || true
 
 INFO "HAProxy log kontrol (son 5 satır):"
 echo "  --- haproxy1 ---"
